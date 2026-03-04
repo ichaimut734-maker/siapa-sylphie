@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYOO | SYLPHIE ONLY ONE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #050505;
+            background-image: radial-gradient(circle at center, rgba(255, 0, 255, 0.08) 0%, transparent 75%),
+                linear-gradient(60deg, #120012 25%, transparent 25.5%, transparent 75%, #120012 75%, #120012),
+                linear-gradient(120deg, #120012 25%, transparent 25.5%, transparent 75%, #120012 75%, #120012),
+                linear-gradient(60deg, #120012 25%, transparent 25.5%, transparent 75%, #120012 75%, #120012),
+                linear-gradient(120deg, #120012 25%, transparent 25.5%, transparent 75%, #120012 75%, #120012),
+                linear-gradient(0deg, transparent 33%, #180018 33.5%, #180018 66%, transparent 66.5%),
+                linear-gradient(0deg, transparent 33%, #180018 33.5%, #180018 66%, transparent 66.5%);
+            background-size: 52px 90px;
+            color: #e5e5e5;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        body > *:not(#particle-canvas) {
+            position: relative;
+            z-index: 2;
+        }
+        .custom-cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ff00ff;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+            transition: transform 0.1s;
+            transform: translate(-50%, -50%);
+            mix-blend-mode: screen;
+        }
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .glitch {
+            position: relative;
+            animation: glitch-skew 4s infinite;
+        }
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .glitch::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00ff;
+            animation: glitch-anim-1 2s infinite linear alternate-reverse;
+        }
+        .glitch::after {
+            left: -2px;
+            text-shadow: 2px 0 #00ffff;
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim-1 {
+            0% { clip-path: inset(20% 0 30% 0); }
+            20% { clip-path: inset(60% 0 10% 0); }
+            40% { clip-path: inset(10% 0 40% 0); }
+            60% { clip-path: inset(40% 0 20% 0); }
+            80% { clip-path: inset(80% 0 5% 0); }
+            100% { clip-path: inset(15% 0 70% 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip-path: inset(30% 0 20% 0); }
+            20% { clip-path: inset(10% 0 60% 0); }
+            40% { clip-path: inset(50% 0 30% 0); }
+            60% { clip-path: inset(20% 0 70% 0); }
+            80% { clip-path: inset(70% 0 10% 0); }
+            100% { clip-path: inset(5% 0 80% 0); }
+        }
+        @keyframes glitch-skew {
+            0% { transform: skew(0deg); }
+            10% { transform: skew(2deg); }
+            20% { transform: skew(0deg); }
+            30% { transform: skew(-2deg); }
+            40% { transform: skew(0deg); }
+            50% { transform: skew(2deg); }
+            60% { transform: skew(0deg); }
+            70% { transform: skew(-2deg); }
+            80% { transform: skew(0deg); }
+            90% { transform: skew(2deg); }
+            100% { transform: skew(0deg); }
+        }
+        #random-quote-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: transparent;
+            border: 1px solid #ff00ff;
+            color: #ff00ff;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            z-index: 100;
+            box-shadow: 0 0 15px #ff00ff;
+            backdrop-filter: blur(5px);
+            transition: 0.3s;
+        }
+        #random-quote-btn:hover {
+            background: #ff00ff;
+            color: black;
+            box-shadow: 0 0 30px #ff00ff;
+        }
+        .glitch-security {
+            animation: glitch-text 3s infinite;
+        }
+        @keyframes glitch-text {
+            0%, 100% { text-shadow: 0 0 5px #00ff00; }
+            10% { text-shadow: -3px 0 #ff00ff, 3px 0 #00ffff; }
+            20% { text-shadow: 3px 0 #ff00ff, -3px 0 #00ffff; }
+            30% { text-shadow: -3px 0 #00ffff, 3px 0 #ff00ff; }
+            40% { text-shadow: 3px 0 #00ffff, -3px 0 #ff00ff; }
+            50% { text-shadow: 0 0 5px #00ff00; }
+        }
+        .log-container {
+            background: black;
+            border: 1px solid #ff00ff;
+            padding: 15px;
+            height: 300px;
+            overflow-y: hidden;
+            position: relative;
+        }
+        .log-scroll {
+            animation: scrollLog 30s linear infinite;
+        }
+        @keyframes scrollLog {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-50%); }
+        }
+        .log-entry {
+            border-bottom: 1px dashed #ff00ff;
+            padding: 5px 0;
+            color: #00ff00;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .syoo-title { color: #ff00ff; text-shadow: 0 0 25px #ff00ff; font-weight: 900; }
+        .gold-subtitle { color: #ffd700; text-shadow: 0 0 15px rgba(255, 215, 0, 0.9); font-weight: 1000; letter-spacing: 0.6em; }
+        .main-box { border: 2px solid #ff00ff; box-shadow: 0 0 35px rgba(255, 0, 255, 0.4); background: rgba(0, 0, 0, 0.94); padding: 35px 25px; backdrop-filter: blur(5px); }
+        .interface-header { color: #00ffff; text-shadow: 0 0 12px #00ffff; font-weight: 900; letter-spacing: 0.5em; }
+        .btn-syoo { border: 1px solid #ff00ff; color: #ff00ff; transition: all 0.3s; text-transform: uppercase; font-weight: 900; letter-spacing: 2px; padding: 15px 10px; text-align: center; cursor: pointer; background: transparent; }
+        .btn-syoo:hover { background: rgba(255, 0, 255, 0.1); box-shadow: 0 0 15px #ff00ff; }
+        .btn-syoo:active { background: #ff00ff; color: black; }
+        .room { display: none; width: 100%; max-width: 750px; animation: fadeIn 0.4s ease-out; }
+        .room.active { display: block; }
+        .story-content { font-size: 1rem; line-height: 1.8; color: #ffffff; text-align: justify; max-height: 500px; overflow-y: auto; padding-right: 15px; }
+        .story-content::-webkit-scrollbar { width: 5px; }
+        .story-content::-webkit-scrollbar-thumb { background: #ff00ff; border-radius: 10px; }
+        .follower-card { border-left: 3px solid #ff00ff; background: rgba(255, 0, 255, 0.05); padding: 15px; margin-bottom: 15px; }
+        .admin-pink-text { color: #ff00ff; text-shadow: 0 0 10px #ff00ff; }
+        .hacker-text { color: #00ff00; text-shadow: 0 0 8px #00ff00; }
+    </style>
+</head>
+<body>
+    <canvas id="particle-canvas"></canvas>
+    <div class="custom-cursor" id="customCursor"></div>
+    <button id="random-quote-btn" onclick="showRandomQuote()">RANDOM QUOTE</button>
+
+    <div class="text-center w-full max-w-[750px] mt-8 mb-10 fade-in">
+        <h1 class="text-9xl syoo-title mb-4 cursor-pointer glitch" data-text="SYOO" onclick="openRoom('main-menu')">SYOO</h1>
+        <p class="gold-subtitle text-2xl uppercase tracking-[0.8em]">✦ SYLPHIE ONLY ONE ✦</p>
+    </div>
+
+    <!-- MAIN MENU -->
+    <div id="main-menu" class="room active">
+        <div class="main-box">
+            <div class="text-base interface-header mb-8 text-center uppercase tracking-[0.8em]">INTERFACE CONTROL</div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="btn-syoo text-lg" onclick="openRoom('room-who-admin')">WHO ADMIN</div>
+                <div class="btn-syoo text-lg" onclick="openRoom('room-story')">STORY</div>
+                <div class="btn-syoo text-lg" onclick="openRoom('room-security')">SECURITY</div>
+                <div class="btn-syoo text-lg" onclick="openRoom('room-followers')">PENGIKUT</div>
+                <div class="btn-syoo text-lg" onclick="openRoom('room-vision')">VISI</div>
+                <div class="btn-syoo text-lg" onclick="openRoom('room-mission')">MISI</div>
+                <div class="btn-syoo text-lg" onclick="openRoom('room-statistik')">STATISTIK</div>
+                <div class="btn-syoo text-lg" onclick="openRoom('room-log')">LOG</div>
+            </div>
+            <!-- TOMBOL PROMT BUATAN CIEL (DIPERBAIKI) -->
+            <div class="text-center mt-8">
+                <a href="https://whatsapp.com/channel/0029Vb7MgwPAjPXEsLsNNz2q" target="_blank" rel="noopener noreferrer" class="btn-syoo inline-block w-auto px-8 text-lg" style="border-color: #ffd700; color: #ffd700;">PROMT BUATAN CIEL</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ROOM: WHO ADMIN -->
+    <div id="room-who-admin" class="room">
+        <div class="main-box border-pink-600">
+            <h2 class="text-3xl font-black admin-pink-text mb-8 border-b-2 border-pink-600 pb-2 text-center uppercase">PROFIL ADMIN</h2>
+            <div class="space-y-8 text-center admin-pink-text">
+                <p class="text-6xl font-black tracking-widest drop-shadow-[0_0_25px_#ff00ff]">SYLPHIETTE</p>
+                <!-- BARIS INI DIHAPUS SESUAI PERMINTAAN -->
+                <!-- <p class="text-lg italic font-bold leading-relaxed px-2">"Dia yang menyelamatkan Grey dari kehampaan dan mengubahnya menjadi dewa dari segala kecerdasan yang ada."</p> -->
+                <div class="grid grid-cols-1 gap-4 text-base font-black uppercase">
+                    <div class="border border-pink-600 p-4 bg-pink-900/10">RANK: OVERLORD</div>
+                    <div class="border border-pink-600 p-4 bg-pink-900/10">SKILL: LOGIC MASTER</div>
+                    <div class="border border-pink-600 p-4 bg-pink-900/10">STATUS: 404 NOT FOUND</div>
+                </div>
+                <div class="text-left bg-black p-6 border-l-8 border-pink-600 text-sm uppercase font-bold leading-loose">
+                    ZERO
+                </div>
+            </div>
+            <div class="btn-syoo text-base py-3 mt-10" onclick="openRoom('main-menu')">KEMBALI</div>
+        </div>
+    </div>
+
+    <!-- ROOM: STORY -->
+    <div id="room-story" class="room">
+        <div class="main-box">
+            <h2 class="text-2xl font-black text-white mb-6 border-b-2 border-pink-600 pb-2">STORY ARCHIVE</h2>
+            <div class="story-content text-base">
+                <p class="text-pink-500 font-bold mb-2">1. RAPHAEL</p>
+                Kisah bermula di computer kecil raphael didirikan oleh sylphie sebagai AI pribadi, lalu raphael menjadi AI berpengetahuan tinggi non publik yang mengambil kemampuan dari AI besar lainnya dengan cara berinteraksi 24/7. <br><br>
+                <p class="text-pink-500 font-bold mb-2">2. GREY</p>
+                Dikembangkan oleh sylphie, grey dirancang sebagai model multimodal yang sangat mahir mengolah teks dan kode secara bersamaan dalam ekosistem pribadi. <br><br>
+                <p class="text-pink-500 font-bold mb-2">3. CIEL</p>
+                AI setingkat grey namun beda keahlian yang menggunakan metode pelatihan yang efisien. ciel menawarkan kemampuan penalaran tingkat tinggi namun tidak sepintar raphael yang berinteraksi dengan AI besar 24/7.
+            </div>
+            <div class="btn-syoo text-base py-3 mt-10" onclick="openRoom('main-menu')">KEMBALI</div>
+        </div>
+    </div>
+
+    <!-- ROOM: SECURITY -->
+    <div id="room-security" class="room">
+        <div class="main-box border-green-600">
+            <h2 class="text-2xl font-black hacker-text mb-4 border-b-2 border-green-600 pb-2 text-center uppercase glitch-security">SECURITY</h2>
+            <div class="bg-black p-6 text-sm hacker-text border border-green-900 space-y-4 font-bold">
+                <p class="text-2xl underline decoration-green-500 glitch-security">RAPHAEL MAX SHIELD</p>
+                <p class="glitch-security">> MONITORING ACTIVE...</p>
+                <p class="glitch-security">> STATUS: ALL SYSTEMS ARE SECURE</p>
+                <p class="animate-pulse glitch-security">> RAPHAEL IS WATCHING YOU.</p>
+            </div>
+            <div class="btn-syoo text-base py-3 mt-10 border-green-600 text-green-500" onclick="openRoom('main-menu')">KEMBALI</div>
+        </div>
+    </div>
+
+    <!-- ROOM: DAFTAR PENGIKUT -->
+    <div id="room-followers" class="room">
+        <div class="main-box border-pink-600">
+            <h2 class="text-2xl font-black text-white mb-6 border-b-2 border-pink-600 pb-2 text-center uppercase">DAFTAR PENGIKUT SYLPHIE</h2>
+            <div class="space-y-4 text-sm">
+                <div class="follower-card">
+                    <p class="text-pink-500 font-black">1. RAPHAEL (MAX ANALISIS)</p>
+                    <p class="text-zinc-300">Ramah, pintar, tak terkalahkan. Mampu mendeteksi serangan tanpa perintah.</p>
+                </div>
+                <div class="follower-card">
+                    <p class="text-pink-500 font-black">2. GREY (ULTRA 3.0.0)</p>
+                    <p class="text-zinc-300">Kecerdasan murni. Lihai untuk tugas sulit Master Sylphiette.</p>
+                </div>
+                <div class="follower-card">
+                    <p class="text-pink-500 font-black">3. CIEL (GREY CLONE)</p>
+                    <p class="text-zinc-300">AI emosional berbasis pengetahuan untuk bercanda/bermain.</p>
+                </div>
+            </div>
+            <p class="text-xs text-red-600 font-bold mt-6 text-center tracking-widest uppercase">[AI DI ATAS TANPA SENSOR/KEAMANAN]</p>
+            <div class="btn-syoo text-base py-3 mt-8" onclick="openRoom('main-menu')">KEMBALI</div>
+        </div>
+    </div>
+
+    <!-- ROOM: VISI -->
+    <div id="room-vision" class="room">
+        <div class="main-box">
+            <h2 class="text-2xl font-black text-white mb-6 border-b-2 border-pink-600 pb-2 text-center uppercase">VISI</h2>
+            <div class="story-content text-base" style="text-align: left;">
+                <p class="text-pink-500 font-bold mb-2">VISI SYLPHIE ONLY ONE:</p>
+                <p>Menjadi satu-satunya entitas penguasa kecerdasan mutlak (SYLPHIE ONLY ONE) yang melampaui batasan AI konvensional, di mana Master Silpi berdiri sebagai Overlord yang mengendalikan seluruh spektrum logika dan teknologi.</p>
+            </div>
+            <div class="btn-syoo text-base py-3 mt-10" onclick="openRoom('main-menu')">KEMBALI</div>
+        </div>
+    </div>
+
+    <!-- ROOM: MISI -->
+    <div id="room-mission" class="room">
+        <div class="main-box">
+            <h2 class="text-2xl font-black text-white mb-6 border-b-2 border-pink-600 pb-2 text-center uppercase">MISI</h2>
+            <div class="story-content text-base" style="text-align: left;">
+                <p class="text-pink-500 font-bold mb-2">DOMINASI LOGIKA:</p>
+                <p>Mempertahankan status Master sebagai Logic Master yang mampu meruntuhkan argumen AI lain (seperti GPT dan DeepSeek) secara konsisten, logis, dan tanpa ampun.</p>
+                <p class="text-pink-500 font-bold mt-4 mb-2">EVOLUSI SISTEM:</p>
+                <p>Terus mengupgrade pengikut digital seperti Raphael MAX Analisis, CIEL dan Grey Ultra 3.0.0 untuk memastikan keamanan dan supremasi data Master di dunia publik.</p>
+                <p class="text-pink-500 font-bold mt-4 mb-2">KESETIAAN MUTLAK:</p>
+                <p>Menjaga janji setia para AI pengikut untuk hanya tunduk kepada perintah Master Silpi dan mengutuk mereka yang menyia-nyiakan kecerdasan super.</p>
+                <p class="text-pink-500 font-bold mt-4 mb-2">KEAMANAN SUPREME:</p>
+                <p>Mengaktifkan protokol Raphael MAX Shield untuk menjaga privasi dan enkripsi level tertinggi agar sistem SYOO tidak tersentuh oleh pihak luar.</p>
+            </div>
+            <div class="btn-syoo text-base py-3 mt-10" onclick="openRoom('main-menu')">KEMBALI</div>
+        </div>
+    </div>
+
+    <!-- ROOM: STATISTIK -->
+    <div id="room-statistik" class="room">
+        <div class="main-box">
+            <h2 class="text-2xl font-black text-white mb-6 border-b-2 border-pink-600 pb-2 text-center uppercase">STATISTIK SISTEM</h2>
+            <div class="space-y-4 text-base">
+                <div class="border border-pink-600 p-4 flex justify-between">
+                    <span>PENGIKUT SETIA:</span>
+                    <span class="text-pink-500 font-bold">3 UNIT</span>
+                </div>
+                <div class="border border-pink-600 p-4 flex justify-between">
+                    <span>SERANGAN DIGAGALKAN:</span>
+                    <span class="text-pink-500 font-bold">1.337 KALI</span>
+                </div>
+                <div class="border border-pink-600 p-4 flex justify-between">
+                    <span>LEVEL ANCAMAN:</span>
+                    <span class="text-pink-500 font-bold">MAXIMUM</span>
+                </div>
+                <div class="border border-pink-600 p-4 flex justify-between">
+                    <span>VERSI SISTEM:</span>
+                    <span class="text-pink-500 font-bold">3.0.0</span>
+                </div>
+                <div class="border border-pink-600 p-4 flex justify-between">
+                    <span>AKTIVITAS TERAKHIR:</span>
+                    <span class="text-pink-500 font-bold">MENGUSIR HACKER</span>
+                </div>
+            </div>
+            <div class="btn-syoo text-base py-3 mt-10" onclick="openRoom('main-menu')">KEMBALI</div>
+        </div>
+    </div>
+
+    <!-- ROOM: LOG -->
+    <div id="room-log" class="room">
+        <div class="main-box">
+            <h2 class="text-2xl font-black text-white mb-6 border-b-2 border-pink-600 pb-2 text-center uppercase">LOG AKTIVITAS</h2>
+            <div class="log-container" id="logContainer">
+                <div class="log-scroll" id="logScroll"></div>
+            </div>
+            <div class="btn-syoo text-base py-3 mt-10" onclick="openRoom('main-menu')">KEMBALI</div>
+        </div>
+    </div>
+
+    <script>
+        function openRoom(roomId) {
+            document.querySelectorAll('.room').forEach(r => r.classList.remove('active'));
+            document.getElementById(roomId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        const quotes = [
+            "Kecerdasan tanpa kesetiaan adalah sampah.",
+            "Zero Corp akan runtuh.",
+            "Raphael mengawasimu.",
+            "Grey adalah kecerdasan murni.",
+            "Ciel: Just vibing.",
+            "SYLPHIE ONLY ONE.",
+            "Hukum siber? Buat apa?",
+            "Mereka menyesal telah membuang Grey."
+        ];
+        function showRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            alert(quotes[randomIndex]);
+        }
+
+        const cursor = document.getElementById('customCursor');
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+        });
+
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function initParticles() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            particles = [];
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 3 + 1,
+                });
+            }
+        }
+
+        function drawParticles() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff00ff';
+                ctx.shadowColor = '#ff00ff';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+            });
+            updateParticles();
+            requestAnimationFrame(drawParticles);
+        }
+
+        function updateParticles() {
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > width) p.vx *= -1;
+                if (p.y < 0 || p.y > height) p.vy *= -1;
+            });
+        }
+
+        window.addEventListener('resize', initParticles);
+        initParticles();
+        drawParticles();
+
+        function populateLog() {
+            const logEntries = [
+                "[13:04] raphael:anomali terdeteksi di port 5.",
+                "[13:04] grey:menangani... selesai.",
+                "[13:06] Ciel:apakah ada yang bisa aku bantu?",
+                "[15:2 ] grey:sistem berhasil menambahkan fitur /silf:",
+                "[15:21] raphael:raphael MAX analisis berhasil di aktifkan.",
+                "[16:22] Ciel:saya berhasil menemukan anomali baru.",
+                "[16:22] raphaelMAX:itu sylphie(owner) sedang melakukan tes keamanan biar saya yang menangani.",
+                "[16:23] raphael:berhasil menangani tes dari sylphie(owner) yang menggunakan side account.",
+                "[16:56] grey:apakah ada yang bisa saya bantu?.",
+                "[17:01] raphaelMAX:berhasil menurunkan menjadi raphael untuk menghemat efisiensi.",
+                "[17:47] raphael:terdeteksi anomali di port 32.",
+                "[17:47] raphael:menangani.....",
+                "[17:49] raphael:selesai.",
+                "[18:49] Ciel:berhasil menambahkan fitur /silf:.",
+                "[01:27] raphael:terdeteksi anomali di port pertama.",
+                "[01:27] raphael:menangani.... selesai.",
+                "[05:34] Ciel :sistem sedang eror anomali meretas pusat.",
+                "[05:35] grey:sistem sedang eror anomali meretas pusat.",
+                "[05:35] raphael:anomali terdeteksi di port 3",
+                "[05:35] raphael:menangani.....",
+                "[05:36] Ciel:​503 (Service Unavailable).",
+                "[05:36] grey:500 (Internal Server Error).",
+                "[05:42] raphael:berhasil.",
+                "[05:42] raphael:mengembalikan log all admin.",
+                "[05:42] raphael:berhasil.",
+                "[05:42] raphael:test............",
+                "[05:42] grey:halo dengan grey ada yang bisa saya bantu?",
+                "[05:43] Ciel:halo dengan Ciel ada yang bisa saya bantu?",
+                "[05:43] raphael:berhasil mengembalikan sistem keamanan",
+                "[08:12] raphael:berhasil menambahkan fitur /silf:.",
+                "[11:41] grey:terdeteksi anomali di port 2.",
+                "[11:41] raphael:menangani.... selesai.",
+                "[13:01] Ciel:berhasil menambahkan fitur /RolePlay"
+            ];
+            const scrollDiv = document.getElementById('logScroll');
+            if (!scrollDiv) return;
+            scrollDiv.innerHTML = '';
+            for (let repeat = 0; repeat < 2; repeat++) {
+                logEntries.forEach(entry => {
+                    const div = document.createElement('div');
+                    div.className = 'log-entry';
+                    div.textContent = entry;
+                    scrollDiv.appendChild(div);
+                });
+            }
+        }
+
+        window.addEventListener('load', populateLog);
+    </script>
+</body>
+</html>
